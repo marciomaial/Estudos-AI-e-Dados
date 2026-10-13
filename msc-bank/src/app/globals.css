@@ -1,0 +1,261 @@
+@import "tailwindcss";
+
+/* ================================================================
+   MSC Bank · tokens do design system Ledger
+   Única fonte de cores, superfícies, tipografia e motion.
+   ================================================================ */
+
+@theme {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* superfícies */
+  --color-canvas: #000000; /* página e navbar pill */
+  --color-card: #0a0b0e; /* cards do site, footer */
+  --color-app: #0c0d10; /* sidebar, main e header do app */
+  --color-inner: #121317; /* cards do app, campos, track do segmented */
+  --color-inner-hover: #16171b;
+  --color-track: #14181f; /* pills de período */
+  --color-tooltip: #1a1b20;
+  --color-elevated: #1c1d24; /* início do gradiente do card de saldo */
+  --color-terminal: #0f1115;
+
+  /* motion */
+  --ease-ledger: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-ledger-std: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bar: cubic-bezier(0.33, 1, 0.68, 1);
+
+  --animate-marquee: marquee-rtl 40s linear infinite;
+  --animate-bar-loop: barCycle 6s var(--ease-bar) infinite;
+  --animate-grow: barGrow 0.9s var(--ease-ledger) both;
+
+  @keyframes marquee-rtl {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  @keyframes barCycle {
+    0% { transform: scaleY(0); opacity: 0; }
+    20%, 80% { transform: scaleY(1); opacity: 1; }
+    95%, 100% { transform: scaleY(0); opacity: 0; }
+  }
+  @keyframes barGrow {
+    from { transform: scaleY(0); opacity: 0; }
+    to { transform: scaleY(1); opacity: 1; }
+  }
+}
+
+html {
+  color-scheme: dark;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-slate-300);
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: rgb(16 185 129 / 0.3);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid rgb(16 185 129 / 0.6);
+  outline-offset: 2px;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------------------
+   Blur-up entrance (animationIn do Ledger): 0.8s ease-out, delays 0.1 → 0.6s
+   Use com `.anim-in` + style={{ animationDelay }} ou o componente <Reveal>.
+   --------------------------------------------------------------- */
+@keyframes animationIn {
+  0% { opacity: 0; transform: translateY(30px); filter: blur(8px); }
+  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+.anim-in {
+  animation: animationIn 0.8s ease-out both;
+}
+/* animate-on-scroll: pausado até 20% visível (IntersectionObserver em <Reveal>) */
+.reveal {
+  animation: animationIn 0.8s ease-out both;
+  animation-play-state: paused;
+}
+.reveal.is-visible {
+  animation-play-state: running;
+}
+
+/* ---------------------------------------------------------------
+   Shiny CTA: borda cônica girando (border-spin 2.5s)
+   --------------------------------------------------------------- */
+@property --gradient-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes border-spin {
+  to { --gradient-angle: 360deg; }
+}
+.shiny-cta {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  font-weight: 500;
+  color: #fff;
+  background:
+    linear-gradient(#000, #000) padding-box,
+    conic-gradient(from var(--gradient-angle), transparent 0%, #059669 5%, #34d399 15%, #059669 30%, transparent 40%, transparent 100%) border-box;
+  border: 2px solid transparent;
+  box-shadow: inset 0 0 0 1px #1a1818;
+  transition: transform 0.3s var(--ease-ledger-std), box-shadow 0.3s var(--ease-ledger-std);
+  animation: border-spin 2.5s linear infinite;
+}
+.shiny-cta:hover {
+  box-shadow: inset 0 0 0 1px #1a1818, 0 0 24px -6px rgb(16 185 129 / 0.5);
+}
+.shiny-cta:active {
+  transform: translateY(1px);
+}
+.shiny-cta:disabled {
+  animation: none;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---------------------------------------------------------------
+   Moldura de seção (white/10 → white/0 → white/10) e borda em gradiente
+   --------------------------------------------------------------- */
+.section-frame {
+  position: relative;
+  border-radius: 1.5rem;
+  background: linear-gradient(to bottom right, rgb(255 255 255 / 0.1), rgb(255 255 255 / 0), rgb(255 255 255 / 0.1));
+  padding: 1px;
+}
+
+/* Flashlight: borda e brilho que seguem o cursor (--x / --y) */
+.flashlight {
+  --x: 50%;
+  --y: 50%;
+  position: relative;
+  isolation: isolate;
+}
+.flashlight::before,
+.flashlight::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s var(--ease-ledger-std);
+}
+.flashlight::before {
+  padding: 1px;
+  background: radial-gradient(600px circle at var(--x) var(--y), rgb(16 185 129 / 0.4), transparent 40%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+.flashlight::after {
+  background: radial-gradient(800px circle at var(--x) var(--y), rgb(255 255 255 / 0.03), transparent 40%);
+  z-index: -1;
+}
+.flashlight:hover::before,
+.flashlight:hover::after {
+  opacity: 1;
+}
+
+/* ---------------------------------------------------------------
+   Fundo do hero: aurora/laser em CSS (fallback leve da cena Unicorn Studio)
+   --------------------------------------------------------------- */
+.hero-aurora {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(60% 50% at 50% 0%, rgb(16 185 129 / 0.22), transparent 70%),
+    radial-gradient(40% 40% at 85% 30%, rgb(168 85 247 / 0.1), transparent 70%),
+    radial-gradient(35% 35% at 10% 60%, rgb(59 130 246 / 0.06), transparent 70%);
+}
+.hero-aurora .beam {
+  position: absolute;
+  top: -20%;
+  width: 2px;
+  height: 140%;
+  background: linear-gradient(to bottom, transparent, rgb(52 211 153 / 0.7) 45%, transparent);
+  filter: blur(1px);
+  box-shadow: 0 0 24px 6px rgb(16 185 129 / 0.25);
+  transform-origin: top center;
+  animation: beam-sway 12s ease-in-out infinite alternate;
+}
+.hero-aurora .fog {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 40%;
+  background: linear-gradient(to top, #000, transparent);
+}
+.hero-aurora .noise {
+  position: absolute;
+  inset: 0;
+  opacity: 0.08;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+@keyframes beam-sway {
+  from { transform: rotate(var(--r0, -18deg)); opacity: 0.55; }
+  to { transform: rotate(var(--r1, 18deg)); opacity: 1; }
+}
+
+/* Typing cursor do terminal */
+.caret::after {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 12px;
+  margin-left: 2px;
+  vertical-align: -1px;
+  background: #34d399;
+  animation: blink 1s steps(2, start) infinite;
+}
+@keyframes blink {
+  to { visibility: hidden; }
+}
+
+.mask-fade-x {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 20%, #000 80%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 20%, #000 80%, transparent);
+}
+
+/* ---------------------------------------------------------------
+   Movimento reduzido: sem blur-up, loops, marquee ou feixes
+   --------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .reveal,
+  .anim-in {
+    animation: none !important;
+  }
+  .hero-aurora .beam,
+  .animate-bar-loop,
+  .animate-grow,
+  .animate-marquee {
+    animation: none !important;
+  }
+}
